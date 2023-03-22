@@ -6,6 +6,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.server.WithFormRead;
 
 import javax.inject.Inject;
@@ -33,11 +34,11 @@ import java.util.concurrent.TimeoutException;
 @Path("/pos")
 public class PosProxyController {
 
-    private final String destination = "http://localhost:8081";
-    private final String DEVICE_ID = UUID.randomUUID().toString();
+    @ConfigProperty(name = "posmanager.url")
+    String destination;
 
     @Inject
-    private SignatureService signatureService;
+    SignatureService signatureService;
 
     private final WebClient webClient = WebClient.create(Vertx.vertx());
 

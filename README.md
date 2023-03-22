@@ -3,10 +3,19 @@
 The edge-proxy is a proxy component to forward REST call to the posmanager.
 It enhances all requests with cryptographic headers, to ensure the identity of the edge device.
 
+On startup please set the following environment variables:
+```
+DEVICE_SERIAL=The unique serial of the device that is also in the pos_devices table
+KEYSTORE_PATH=The path to the keystore.jks file that is created by the registration-service
+POSMANAGER_URL=The url to the posmanager in the backoffice cluster
+```
+
+
+These headers are being added on passthrough:
 ```
 pos-device-id: ID of the device
 pos-sign-timestamp: unix timestamp
-pos-signature: An hmac of <pos-device-id>::<pos-sign-timestamp> using the edge devices private key
+pos-signature: An signature (SHA256 with RSA) of <pos-device-id>::<pos-sign-timestamp> using the edge devices private key
 ```
 
 

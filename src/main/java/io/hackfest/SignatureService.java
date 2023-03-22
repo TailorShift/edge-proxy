@@ -1,8 +1,11 @@
 package io.hackfest;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -17,30 +20,36 @@ import java.security.UnrecoverableKeyException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-@ApplicationScoped
+@Singleton
 public class SignatureService {
-    private final static String DEVICE_ID = "Shop1_dev1";
-    private final static String KEYSTORE_PATH = "keystore.jks";
+
+    @ConfigProperty(name = "device.serial")
+    String deviceSerial;
+
+    @ConfigProperty(name = "device.keystorePath")
+    String keystorePath;
     private final static String KEYSTORE_PASSWORD = "banana";
 
-    private final Signature sig = Signature.getInstance("SHA256withRSA");
-    private final KeyStore keyStore;
-    private final PrivateKey key;
+    private Signature sig;
+    private KeyStore keyStore;
+    private PrivateKey key;
 
-    public SignatureService() throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
+    @PostConstruct
+    public void init() throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
         Security.addProvider(new BouncyCastleProvider());
-        keyStore = KeyStore.Builder.newInstance(Paths.get(KEYSTORE_PATH).toFile(), new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray())).getKeyStore();
+        sig = Signature.getInstance("SHA256withRSA");
+        keyStore = KeyStore.Builder.newInstance(Paths.get(keystorePath).toFile(), new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray())).getKeyStore();
         key = (PrivateKey) keyStore.getKey("certificate", KEYSTORE_PASSWORD.toCharArray());
     }
 
     public CryptoHeaders buildCryptoHeaders() throws InvalidKeyException, SignatureException {
         long timestamp = ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond();
-        String signatureBase = DEVICE_ID + "::" + timestamp;
+        String signatureBase = deviceSerial + "::" + timestamp;
 
         sig.initSign(key);
         sig.update(signatureBase.getBytes(StandardCharsets.UTF_8));
         byte[] signature = sig.sign();
 
-        return new CryptoHeaders(DEVICE_ID, timestamp, signature);
+        return new CryptoHeaders(deviceSerial, timestamp, signature);
     }
 }
