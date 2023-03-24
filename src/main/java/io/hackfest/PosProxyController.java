@@ -73,7 +73,7 @@ public class PosProxyController {
     ) throws ExecutionException, InterruptedException, TimeoutException, InvalidKeyException, SignatureException {
         RequestOptions options = buildRequestOptions(headers, uriInfo);
 
-        logger.info("GET passthrough to url: {}", options.getURI());
+        logger.info("GET passthrough with options: {}", options.toJson());
 
         // Send request
         var result = webClient.request(HttpMethod.GET, options)
@@ -111,7 +111,7 @@ public class PosProxyController {
             map.add(kvArray[0], kvArray[1]);
         });
 
-        logger.info("POST (application/x-www-form-urlencoded) passthrough to url: {}", options.getURI());
+        logger.info("POST (application/x-www-form-urlencoded) with options: {}", options.toJson());
 
         // Send request
         var result = webClient.request(HttpMethod.POST, options)
@@ -148,7 +148,7 @@ public class PosProxyController {
                 .toCompletableFuture()
                 .get(1, TimeUnit.SECONDS);
 
-        logger.info("POST (application/json) passthrough to url: {}", options.getURI());
+        logger.info("POST (application/json) passthrough with options: {}", options.toJson());
 
         // Pass through successes, fail otherwise
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
