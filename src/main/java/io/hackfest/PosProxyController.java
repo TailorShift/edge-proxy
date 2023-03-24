@@ -48,8 +48,6 @@ public class PosProxyController {
         String absoluteURI = uriBuilder.build().toString();
         options.setAbsoluteURI(absoluteURI);
 
-        logger.info("Passthrough to url: {}", absoluteURI);
-
         // Keep headers
         headers.getRequestHeaders().forEach((key, values) -> {
             values.forEach(value -> options.addHeader(key, value));
@@ -70,6 +68,8 @@ public class PosProxyController {
             UriInfo uriInfo
     ) throws ExecutionException, InterruptedException, TimeoutException, InvalidKeyException, SignatureException {
         RequestOptions options = buildRequestOptions(headers, uriInfo);
+
+        logger.info("GET passthrough to url: {}", options.getURI());
 
         // Send request
         var result = webClient.request(HttpMethod.GET, options)
@@ -107,6 +107,8 @@ public class PosProxyController {
             map.add(kvArray[0], kvArray[1]);
         });
 
+        logger.info("POST (application/x-www-form-urlencoded) passthrough to url: {}", options.getURI());
+
         // Send request
         var result = webClient.request(HttpMethod.POST, options)
                 .sendForm(map)
@@ -141,6 +143,8 @@ public class PosProxyController {
                 .toCompletionStage()
                 .toCompletableFuture()
                 .get(1, TimeUnit.SECONDS);
+
+        logger.info("POST (application/json) passthrough to url: {}", options.getURI());
 
         // Pass through successes, fail otherwise
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
