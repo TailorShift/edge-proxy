@@ -49,9 +49,13 @@ public class PosProxyController {
         options.setAbsoluteURI(absoluteURI);
 
         // Keep headers
-        headers.getRequestHeaders().forEach((key, values) -> {
-            values.forEach(value -> options.addHeader(key, value));
-        });
+        headers.getRequestHeaders()
+                .forEach((key, values) -> {
+                    // avoid sending inconsistent original host
+                    if (key.equalsIgnoreCase("Host"))
+                        return;
+                    values.forEach(value -> options.addHeader(key, value));
+                });
 
         // Add crypto headers ensuring device identity
         signatureService.buildCryptoHeaders().applyTo(options);
