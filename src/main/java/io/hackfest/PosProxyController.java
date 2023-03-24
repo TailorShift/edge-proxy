@@ -7,6 +7,8 @@ import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -20,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 
 @Path("/pos")
 public class PosProxyController {
+    private static final Logger logger = LoggerFactory.getLogger(PosProxyController.class);
 
     @ConfigProperty(name = "posmanager.url")
     String destination;
@@ -42,7 +45,10 @@ public class PosProxyController {
         uriInfo.getQueryParameters().forEach((key, values) -> {
             uriBuilder.queryParam(key, values.toArray());
         });
-        options.setAbsoluteURI(uriBuilder.build().toString());
+        String absoluteURI = uriBuilder.build().toString();
+        options.setAbsoluteURI(absoluteURI);
+
+        logger.info("Passthrough to url: {}", absoluteURI);
 
         // Keep headers
         headers.getRequestHeaders().forEach((key, values) -> {
@@ -76,6 +82,7 @@ public class PosProxyController {
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
             return result.bodyAsString();
         } else {
+            logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
             throw new WebApplicationException(Response.status(result.statusCode()).build());
         }
     }
@@ -111,6 +118,7 @@ public class PosProxyController {
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
             return result.bodyAsString();
         } else {
+            logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
             throw new WebApplicationException(Response.status(result.statusCode()).build());
         }
     }
@@ -138,6 +146,7 @@ public class PosProxyController {
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
             return result.bodyAsString();
         } else {
+            logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
             throw new WebApplicationException(Response.status(result.statusCode()).build());
         }
     }
