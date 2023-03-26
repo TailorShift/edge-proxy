@@ -80,15 +80,18 @@ public class PosProxyController {
                 .send()
                 .toCompletionStage()
                 .toCompletableFuture()
-                .get(1, TimeUnit.SECONDS);
+                .get(5, TimeUnit.SECONDS);
 
         // Pass through successes, fail otherwise
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
             return result.bodyAsString();
         } else {
             logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
-            throw new WebApplicationException(Response.status(result.statusCode()).build());
-        }
+            throw new WebApplicationException(Response.status(
+                            result.statusCode())
+                    .entity(result.bodyAsString())
+                    .build()
+            );        }
     }
 
     @POST
@@ -118,15 +121,18 @@ public class PosProxyController {
                 .sendForm(map)
                 .toCompletionStage()
                 .toCompletableFuture()
-                .get(1, TimeUnit.SECONDS);
+                .get(5, TimeUnit.SECONDS);
 
         // Pass through successes, fail otherwise
         if (result.statusCode() >= 200 && result.statusCode() < 400) {
             return result.bodyAsString();
         } else {
             logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
-            throw new WebApplicationException(Response.status(result.statusCode()).build());
-        }
+            throw new WebApplicationException(Response.status(
+                            result.statusCode())
+                    .entity(result.bodyAsString())
+                    .build()
+            );        }
     }
 
     @POST
@@ -146,7 +152,7 @@ public class PosProxyController {
                 .sendJsonObject(body)
                 .toCompletionStage()
                 .toCompletableFuture()
-                .get(1, TimeUnit.SECONDS);
+                .get(5, TimeUnit.SECONDS);
 
         logger.info("POST (application/json) passthrough with options: {}", options.toJson());
 
@@ -155,7 +161,11 @@ public class PosProxyController {
             return result.bodyAsString();
         } else {
             logger.error("Request failed with {}. Response: {}", result.statusCode(), result.bodyAsString());
-            throw new WebApplicationException(Response.status(result.statusCode()).build());
+            throw new WebApplicationException(Response.status(
+                    result.statusCode())
+                    .entity(result.bodyAsString())
+                    .build()
+            );
         }
     }
 }
